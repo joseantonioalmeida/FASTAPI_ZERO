@@ -43,12 +43,8 @@ addopts = '-p no:warnings'
 [tool.taskipy.tasks]
 lint = 'ruff check --fix'
 format = 'ruff format'
-
 run = 'fastapi dev fastapi_zero/app.py'
-
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=fastapi_zero -v'
-
 post_test = 'coverage html'
-
 coverage = 'explorer.exe "$(wslpath -w htmlcov/index.html)"'
