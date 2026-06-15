@@ -21,3 +21,15 @@ def test_root_deve_retornar_ola_mundo():
     # Assert
     assert response.json() == {'message': 'Olá, Mundo!'}
     assert response.status_code == HTTPStatus.OK
+
+
+def test_saudacao_retorna_ola_mundo():
+    # arrange
+    client = TestClient(app)
+
+    # act
+    response = client.get('/saudacao')
+
+    # assert
+    assert response.status_code == HTTPStatus.OK
+    assert '<h1> Olá Mundo </h1>' in response.text
