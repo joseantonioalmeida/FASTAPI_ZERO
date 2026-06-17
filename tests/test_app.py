@@ -44,4 +44,32 @@ def test_read_users(client):
         == EXPECTED_USERS_COUNT
     )
 
-    # return response
+
+def test_update_user(client):
+    response = client.put(
+        '/users/1/',
+        json={
+            'username': 'jose_put',
+            'email': 'jose_put@gmail.com',
+            'password': 'jose_put321',
+        },
+    )
+
+    # Usuário Encontrado
+    assert response.json() == {
+        'username': 'jose_put',
+        'email': 'jose_put@gmail.com',
+        'id': 1,
+    }
+
+    response = client.put(
+        '/users/2/',
+        json={
+            'username': 'jose_put',
+            'email': 'jose_put@gmail.com',
+            'password': 'jose_put321',
+        },
+    )
+
+    # Usuário não encontrado
+    assert response.json() == {'detail': 'User Not Found.'}
