@@ -41,7 +41,7 @@ quote-style = 'single'
 
 [tool.pytest.ini_options]
 pythonpath = "."
-addopts = '-p no:warnings'
+addopts = '-p no:warnings --ignore=fastapi_zero/settings.py'
 
 [tool.taskipy.tasks]
 lint = 'ruff check . --fix'
