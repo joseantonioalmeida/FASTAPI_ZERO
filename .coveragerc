@@ -2,3 +2,4 @@
 omit =
     */settings.py
     */migrations/*
+    */database.py

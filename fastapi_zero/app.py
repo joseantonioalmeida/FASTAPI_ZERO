@@ -13,6 +13,7 @@ from fastapi_zero.schemas import (
     UserPublic,
     UserSchema,
 )
+from fastapi_zero.security import get_password_hash
 
 app = FastAPI(title='Minha Primeira API em FastAPI')
 
@@ -43,7 +44,9 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
             )
 
     db_user = User(
-        username=user.username, password=user.password, email=user.email
+        username=user.username,
+        email=user.email,
+        password=get_password_hash(user.password),
     )
     session.add(db_user)
     session.commit()
@@ -87,7 +90,7 @@ def update_user(
     try:  # Tente inserir
         user_db.username = user.username
         user_db.email = user.email
-        user_db.password = user.password
+        user_db.password = get_password_hash(user.password)
         session.commit()
         session.refresh(user_db)  # update
     except IntegrityError:  # Se der erro, conflito!
