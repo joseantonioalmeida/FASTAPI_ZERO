@@ -160,3 +160,16 @@ def test_delete_user(client, user):
     # Usuário não encontrado
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'User Not Found'}
+
+
+def test_login_for_acess_token(client, user):
+    response = client.post(
+        '/token/',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    token = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert token['token_type'] == 'Bearer'
+    assert 'acess_token' in token
