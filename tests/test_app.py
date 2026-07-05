@@ -58,17 +58,11 @@ def test_create_user(client, user):
     assert response.json() == {'detail': 'Email already exists'}
 
 
-def test_read_users(
-    client,
-):
-    response = client.get('/users/')
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'users': []}
-
-
-def test_read_with_users(client, user):
+def test_read_users(client, user, token):
     user_schema = UserPublic.model_validate(user).model_dump()
-    response = client.get('/users/')
+    response = client.get(
+        '/users/', headers={'Authorization': f'Bearer {token}'}
+    )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': [user_schema]}
 
@@ -172,4 +166,4 @@ def test_login_for_acess_token(client, user):
 
     assert response.status_code == HTTPStatus.OK
     assert token['token_type'] == 'Bearer'
-    assert 'acess_token' in token
+    assert 'access_token' in token
