@@ -88,7 +88,7 @@ def test_detail_user(client, user):
 
 def test_update_user(client, user, token):
     response = client.put(
-        '/users/1/',
+        f'/users/{user.id}/',
         json={
             'username': 'jose_put',
             'email': 'jose_put@gmail.com',
@@ -146,18 +146,43 @@ def test_update_integrity_error(client, user, token):
     }
 
 
-def test_delete_user(client, user):
-    response = client.delete('/users/1/')
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}/', headers={'Authorization': f'Bearer {token}'}
+    )
 
     # Usuário Encontrado
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
-    response = client.delete('/users/999/')
+    response = client.delete(
+        '/users/666/', headers={'Authorization': f'Bearer {token}'}
+    )
 
     # Usuário não encontrado
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User Not Found'}
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
+
+
+def test_delete_current_user_diferent_user_id(client, user, token):
+    # Criar um user
+    response_post = client.post(
+        '/users/',
+        json={
+            'username': 'joseteste',
+            'email': 'joseteste@gmail.com',
+            'password': 'jose321',
+        },
+    )
+
+    # Deletando um user onde o user_id é diferente do current_user.id
+    response = client.delete(
+        f'/users/{response_post.json()["id"]}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_login_for_acess_token(client, user):
