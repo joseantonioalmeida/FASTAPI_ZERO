@@ -86,7 +86,7 @@ def test_detail_user(client, user):
     assert response.json() == {'detail': 'User Not Found'}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
         '/users/1/',
         json={
@@ -94,6 +94,7 @@ def test_update_user(client, user):
             'email': 'jose_put@gmail.com',
             'password': 'jose_put321',
         },
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     # Usuário Encontrado
@@ -104,19 +105,21 @@ def test_update_user(client, user):
     }
 
     response = client.put(
-        '/users/2/',
+        '/users/666/',
         json={
             'username': 'jose_put',
             'email': 'jose_put@gmail.com',
             'password': 'jose_put321',
         },
+        headers={'Authorization': f'Bearer {token}'},
     )
 
     # Usuário não encontrado
-    assert response.json() == {'detail': 'User Not Found'}
+    assert response.json() == {'detail': 'Could not validate credentials'}
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_update_integrity_error(client, user):
+def test_update_integrity_error(client, user, token):
     # Inserindo Fausto
     client.post(
         '/users/',
@@ -135,6 +138,7 @@ def test_update_integrity_error(client, user):
             'email': 'bob@example.com',
             'password': 'mynewpassword',
         },
+        headers={'Authorization': f'Bearer {token}'},
     )
     assert response_update.status_code == HTTPStatus.CONFLICT
     assert response_update.json() == {
