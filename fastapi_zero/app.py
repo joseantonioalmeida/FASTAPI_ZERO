@@ -134,7 +134,7 @@ def delete_user(
 
 
 @app.post('/token/', response_model=Token)
-def login_for_acess_token(
+def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session),
 ):

@@ -210,7 +210,7 @@ def test_delete_current_user_diferent_user_id(client, user, token):
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_login_for_acess_token(client, user):
+def test_login_for_access_token(client, user):
     response = client.post(
         '/token/',
         data={'username': user.email, 'password': user.clean_password},
@@ -221,3 +221,22 @@ def test_login_for_acess_token(client, user):
     assert response.status_code == HTTPStatus.OK
     assert token['token_type'] == 'Bearer'
     assert 'access_token' in token
+
+
+def test_login_for_access_token_not_user(client):
+    response = client.post(
+        '/token/',
+        data={'username': 'teste@gmail.com', 'password': 'teste321'},
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Incorrect email or password'}
+
+
+def test_login_for_access_token_not_verify_password(client, user):
+    response = client.post(
+        '/token/', data={'username': user.email, 'password': 'senha-errada'}
+    )
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Incorrect email or password'}
