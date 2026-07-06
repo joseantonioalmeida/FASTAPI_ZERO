@@ -119,6 +119,31 @@ def test_update_user(client, user, token):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
+def test_update_current_user_id_diferrent_user_id(client, token):
+    # Criar um user para o user_id ser diferente do current_user.id
+    response2 = client.post(
+        '/users/',
+        json={
+            'username': 'jose_post',
+            'email': 'jose_post@gmail.com',
+            'password': 'jose_post321',
+        },
+    )
+
+    response = client.put(
+        f'/users/{response2.json()["id"]}',
+        json={
+            'username': 'jose_put',
+            'email': 'jose_put@gmail.com',
+            'password': 'jose_put321',
+        },
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
+
+
 def test_update_integrity_error(client, user, token):
     # Inserindo Fausto
     client.post(
