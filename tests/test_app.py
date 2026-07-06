@@ -67,8 +67,10 @@ def test_read_users(client, user, token):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_detail_user(client, user):
-    response = client.get('/users/1/')
+def test_detail_user(client, user, token):
+    response = client.get(
+        f'/users/{user.id}/', headers={'Authorization': f'Bearer {token}'}
+    )
 
     # Usuário Encontrado
 
@@ -79,11 +81,13 @@ def test_detail_user(client, user):
         'id': 1,
     }
 
-    response = client.get('/users/666/')
+    # user_id diferente do current_user.id
+    response = client.get(
+        '/users/666/', headers={'Authorization': f'Bearer {token}'}
+    )
 
-    # Usuário não encontrado
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User Not Found'}
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
 def test_update_user(client, user, token):
