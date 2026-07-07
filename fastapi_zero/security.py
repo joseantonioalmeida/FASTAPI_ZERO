@@ -17,7 +17,7 @@ SECRET_KEY = Settings().SECRET_KEY  # type:ignore
 ALGORITHM = 'HS256'
 ACESS_TOKEN_EXPIRE_MINUTES = 30
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token/')
 
 pwd_context = PasswordHash.recommended()
 

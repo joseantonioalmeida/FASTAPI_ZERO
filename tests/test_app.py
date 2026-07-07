@@ -216,7 +216,7 @@ def test_delete_current_user_diferent_user_id(client, user, token):
 
 def test_login_for_access_token(client, user):
     response = client.post(
-        '/token/',
+        '/auth/token/',
         data={'username': user.email, 'password': user.clean_password},
     )
 
@@ -229,7 +229,7 @@ def test_login_for_access_token(client, user):
 
 def test_login_for_access_token_not_user(client):
     response = client.post(
-        '/token/',
+        '/auth/token/',
         data={'username': 'teste@gmail.com', 'password': 'teste321'},
     )
 
@@ -239,7 +239,8 @@ def test_login_for_access_token_not_user(client):
 
 def test_login_for_access_token_not_verify_password(client, user):
     response = client.post(
-        '/token/', data={'username': user.email, 'password': 'senha-errada'}
+        '/auth/token/',
+        data={'username': user.email, 'password': 'senha-errada'},
     )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
