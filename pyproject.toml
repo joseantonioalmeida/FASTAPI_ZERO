@@ -9,11 +9,12 @@ readme = "README.md"
 requires-python = ">=3.13,<4.0"
 dependencies = [
     "fastapi[standard] (>=0.136.3,<0.137.0)",
-    "sqlalchemy (>=2.0.51,<3.0.0)",
+    "sqlalchemy[asyncio] (>=2.0.51,<3.0.0)",
     "pydantic-settings (>=2.14.2,<3.0.0)",
     "alembic (>=1.18.4,<2.0.0)",
     "pwdlib[argon2] (>=0.3.0,<0.4.0)",
-    "pyjwt (>=2.13.0,<3.0.0)"
+    "pyjwt (>=2.13.0,<3.0.0)",
+    "aiosqlite (>=0.22.1,<0.23.0)"
 ]
 
 
@@ -26,7 +27,8 @@ dev = [
     "ruff (>=0.15.15,<0.16.0)",
     "pytest (>=9.0.3,<10.0.0)",
     "pytest-cov (>=7.1.0,<8.0.0)",
-    "taskipy (>=1.14.1,<2.0.0)"
+    "taskipy (>=1.14.1,<2.0.0)",
+    "pytest-asyncio (>=1.4.0,<2.0.0)"
 ]
 
 [tool.ruff]
@@ -44,6 +46,7 @@ quote-style = 'single'
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings --ignore=fastapi_zero/settings.py'
+asyncio_default_fixture_loop_scope = 'function'
 
 [tool.taskipy.tasks]
 lint = 'ruff check . --fix'
@@ -53,3 +56,6 @@ pre_test = 'task lint'
 test = 'pytest -s -x --cov=fastapi_zero -vv'
 post_test = 'coverage html'
 coverage = 'explorer.exe "$(wslpath -w htmlcov/index.html)"'
+
+[tool.coverage.run]
+concurrency = ["thread", "greenlet"]
