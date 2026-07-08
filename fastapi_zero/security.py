@@ -14,8 +14,8 @@ from fastapi_zero.models import User
 from fastapi_zero.settings import Settings
 
 SECRET_KEY = Settings().SECRET_KEY  # type:ignore
-ALGORITHM = 'HS256'
-ACESS_TOKEN_EXPIRE_MINUTES = 30
+ALGORITHM = Settings().ALGORITHM  # type:ignore
+ACESS_TOKEN_EXPIRE_MINUTES = Settings().ACESS_TOKEN_EXPIRE_MINUTES  # type:ignore
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token/')
 
