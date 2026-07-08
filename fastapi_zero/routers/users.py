@@ -1,6 +1,7 @@
 from http import HTTPStatus
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Session
 from fastapi_zero.database import get_session
 from fastapi_zero.models import User
 from fastapi_zero.schemas import (
+    FilterPage,
     Message,
     UserList,
     UserPublic,
@@ -20,9 +22,12 @@ from fastapi_zero.security import (
 
 router = APIRouter(prefix='/users', tags=['users'])
 
+T_Session = Annotated[Session, Depends(get_session)]
+Current_user = Annotated[User, Depends(get_current_user)]
+
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema, session: Session = Depends(get_session)):
+def create_user(user: UserSchema, session: T_Session):
     db_user = session.scalar(
         select(User).where(
             (User.username == user.username) | (User.email == user.email)
@@ -54,12 +59,13 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
 
 @router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
 def read_users(
-    limit: int = 10,
-    offset: int = 0,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: T_Session,
+    current_user: Current_user,
+    filter_page: Annotated[FilterPage, Query()],
 ):
-    users = session.scalars(select(User).limit(limit).offset(offset))
+    users = session.scalars(
+        select(User).limit(filter_page.limit).offset(filter_page.offset)
+    )
     return {'users': users}
 
 
@@ -68,8 +74,8 @@ def read_users(
 )
 def detail_user(
     user_id: int,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: T_Session,
+    current_user: Current_user,
 ):
     if current_user.id != user_id:
         raise HTTPException(
@@ -85,8 +91,8 @@ def detail_user(
 def update_user(
     user_id: int,
     user: UserSchema,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: T_Session,
+    current_user: Current_user,
 ):
     if current_user.id != user_id:
         raise HTTPException(
@@ -113,8 +119,8 @@ def update_user(
 )
 def delete_user(
     user_id: int,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    session: T_Session,
+    current_user: Current_user,
 ):
     if current_user.id != user_id:
         raise HTTPException(
