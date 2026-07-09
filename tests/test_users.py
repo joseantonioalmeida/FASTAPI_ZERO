@@ -21,7 +21,7 @@ def test_create_user(client, user):
     response = client.post(
         '/users/',
         json={
-            'username': 'Test',
+            'username': f'{user.username}',
             'email': 'blabla@gmail.com',
             'password': 'blabla',
         },
@@ -60,9 +60,9 @@ def test_detail_user(client, user, token):
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        'username': 'Test',
-        'email': 'teste@gmail.com',
-        'id': 1,
+        'username': f'{user.username}',
+        'email': f'{user.email}',
+        'id': int(f'{user.id}'),
     }
 
     # user_id diferente do current_user.id
@@ -107,23 +107,14 @@ def test_update_user(client, user, token):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_update_current_user_id_diferrent_user_id(client, token):
-    # Criar um user para o user_id ser diferente do current_user.id
-    response2 = client.post(
-        '/users/',
-        json={
-            'username': 'jose_post',
-            'email': 'jose_post@gmail.com',
-            'password': 'jose_post321',
-        },
-    )
+def test_update_current_user_id_diferrent_user_id(client, outher_user, token):
 
     response = client.put(
-        f'/users/{response2.json()["id"]}',
+        f'/users/{outher_user.id}',
         json={
-            'username': 'jose_put',
-            'email': 'jose_put@gmail.com',
-            'password': 'jose_put321',
+            'username': f'{outher_user.username}',
+            'email': f'{outher_user.email}',
+            'password': f'{outher_user.clean_password}',
         },
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -132,24 +123,15 @@ def test_update_current_user_id_diferrent_user_id(client, token):
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_update_integrity_error(client, user, token):
-    # Inserindo Fausto
-    client.post(
-        '/users/',
-        json={
-            'username': 'fausto',
-            'email': 'fausto@example.com',
-            'password': 'secret',
-        },
-    )
+def test_update_integrity_error(client, user, outher_user, token):
 
     # Alterando o user das fixtures para fausto
     response_update = client.put(
         f'/users/{user.id}',
         json={
-            'username': 'fausto',
-            'email': 'bob@example.com',
-            'password': 'mynewpassword',
+            'username': f'{outher_user.username}',
+            'email': f'{outher_user.email}',
+            'password': f'{outher_user.clean_password}',
         },
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -177,22 +159,13 @@ def test_delete_user(client, user, token):
     assert response.json() == {'detail': 'Could not validate credentials'}
 
 
-def test_delete_current_user_diferent_user_id(client, user, token):
-    # Criar um user
-    response_post = client.post(
-        '/users/',
-        json={
-            'username': 'joseteste',
-            'email': 'joseteste@gmail.com',
-            'password': 'jose321',
-        },
-    )
-
+def test_delete_current_user_diferent_user_id(client, outher_user, token):
     # Deletando um user onde o user_id é diferente do current_user.id
     response = client.delete(
-        f'/users/{response_post.json()["id"]}',
+        f'/users/{outher_user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
     assert response.status_code == HTTPStatus.FORBIDDEN
+
     assert response.json() == {'detail': 'Not enough permissions'}
