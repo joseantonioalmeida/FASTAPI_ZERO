@@ -1,1 +1,6 @@
 # FASTAPI ZERO
+
+Minha API TEM 3 APPS:
+1- USERS
+2- AUTH
+3- TODO 
