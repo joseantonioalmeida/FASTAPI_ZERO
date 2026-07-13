@@ -35,7 +35,7 @@ class FilterPage(BaseModel):
 
 
 class TodoSchema(BaseModel):
-    name: str
+    title: str
     description: str
     state: TodoState = Field(default=TodoState.todo)
 
