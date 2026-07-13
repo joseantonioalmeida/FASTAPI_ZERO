@@ -11,7 +11,9 @@ from fastapi_zero.models import User
 async def test_create_user(session: AsyncSession, mock_db_time):
     with mock_db_time(model=User) as time:
         new_user = User(
-            username='Teste', email='teste@gmail.com', password='secret'
+            username='Teste',
+            email='teste@gmail.com',
+            password='secret',
         )
 
         session.add(new_user)
@@ -28,4 +30,5 @@ async def test_create_user(session: AsyncSession, mock_db_time):
         'password': 'secret',
         'created_at': time,
         'updated_at': time,
+        'todos': [],
     }
