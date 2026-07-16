@@ -107,14 +107,14 @@ def test_update_user(client, user, token):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_update_current_user_id_diferrent_user_id(client, outher_user, token):
+def test_update_current_user_id_diferrent_user_id(client, other_user, token):
 
     response = client.put(
-        f'/users/{outher_user.id}',
+        f'/users/{other_user.id}',
         json={
-            'username': f'{outher_user.username}',
-            'email': f'{outher_user.email}',
-            'password': f'{outher_user.clean_password}',
+            'username': f'{other_user.username}',
+            'email': f'{other_user.email}',
+            'password': f'{other_user.clean_password}',
         },
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -123,15 +123,15 @@ def test_update_current_user_id_diferrent_user_id(client, outher_user, token):
     assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_update_integrity_error(client, user, outher_user, token):
+def test_update_integrity_error(client, user, other_user, token):
 
     # Alterando o user das fixtures para fausto
     response_update = client.put(
         f'/users/{user.id}',
         json={
-            'username': f'{outher_user.username}',
-            'email': f'{outher_user.email}',
-            'password': f'{outher_user.clean_password}',
+            'username': f'{other_user.username}',
+            'email': f'{other_user.email}',
+            'password': f'{other_user.clean_password}',
         },
         headers={'Authorization': f'Bearer {token}'},
     )
@@ -159,10 +159,10 @@ def test_delete_user(client, user, token):
     assert response.json() == {'detail': 'Could not validate credentials'}
 
 
-def test_delete_current_user_diferent_user_id(client, outher_user, token):
+def test_delete_current_user_diferent_user_id(client, other_user, token):
     # Deletando um user onde o user_id é diferente do current_user.id
     response = client.delete(
-        f'/users/{outher_user.id}',
+        f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 

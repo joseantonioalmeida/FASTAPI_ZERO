@@ -70,7 +70,7 @@ async def read_todos(
 async def delete_todo(
     todo_id: int, current_user: Current_User, session: T_Session
 ):
-    todo = session.scalar(
+    todo = await session.scalar(
         select(Todo).where(Todo.id == todo_id, Todo.user_id == current_user.id)
     )
     if not todo:

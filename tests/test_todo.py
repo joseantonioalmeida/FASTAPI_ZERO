@@ -2,9 +2,10 @@ from http import HTTPStatus
 
 import factory.fuzzy
 import pytest
+from fastapi import HTTPException
 
 from fastapi_zero.models import Todo, TodoState
-from fastapi_zero.routers.todos import create_todo, read_todos
+from fastapi_zero.routers.todos import create_todo, delete_todo, read_todos
 from fastapi_zero.schemas import (  # noqa: F811
     FilterTodo,
     TodoSchema,
@@ -113,3 +114,61 @@ async def test_read_todos_should_return_empty_list_dict_when_no_records_match(
     read = await read_todos(user, session, todo_public)
 
     assert read == {'todos': []}
+
+
+@pytest.mark.asyncio
+async def test_delete_todo_should_message_deleted(
+    client, user, token, session
+):
+    todo = TodoFactory(user_id=user.id)
+    session.add(todo)
+    await session.commit()
+
+    response = client.delete(
+        f'/todos/{todo.id}', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'message': 'Task has been deleted successfully.'
+    }
+
+    # handler direct
+    create_td = await create_todo(todo, user, session)
+    return_delete = await delete_todo(create_td.id, user, session)
+
+    assert return_delete == {'message': 'Task has been deleted successfully.'}
+
+
+@pytest.mark.asyncio
+async def test_delete_todo_should_return_task_not_found(
+    client, token, user, session
+):
+    response = client.delete(
+        '/todos/2', headers={'Authorization': f'Bearer {token}'}
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Task not found.'}
+
+    # handler direct
+    with pytest.raises(HTTPException) as exc_info:
+        await delete_todo(2, user, session)
+
+    assert exc_info.value.status_code == HTTPStatus.NOT_FOUND
+    assert exc_info.value.detail == 'Task not found.'
+
+
+@pytest.mark.asyncio
+async def test_delete_other_user_todo(client, other_user, token, session):
+    other_user_todo = TodoFactory(user_id=other_user.id)
+    session.add(other_user_todo)
+    await session.commit()
+
+    response = client.delete(
+        f'/todos/{other_user_todo.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Task not found.'}
