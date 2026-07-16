@@ -56,4 +56,4 @@ async def read_todos(
         query.limit(todo_filter.limit).offset(todo_filter.offset)
     )
 
-    return todos
+    return {'todos': todos.all()}
