@@ -44,14 +44,19 @@ async def session():
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
-    async with engine.begin() as conn:
-        await conn.run_sync(table_registry.metadata.create_all)
 
-    async with AsyncSession(engine, expire_on_commit=False) as session:
-        yield session
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(table_registry.metadata.create_all)
 
-    async with engine.begin() as conn:
-        await conn.run_sync(table_registry.metadata.drop_all)
+        async with AsyncSession(engine, expire_on_commit=False) as session:
+            yield session
+    finally:
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(table_registry.metadata.drop_all)
+        finally:
+            await engine.dispose()
 
 
 @contextmanager
