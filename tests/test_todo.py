@@ -5,20 +5,26 @@ import pytest
 from fastapi import HTTPException
 
 from fastapi_zero.models import Todo, TodoState
-from fastapi_zero.routers.todos import create_todo, delete_todo, read_todos
+from fastapi_zero.routers.todos import (
+    create_todo,
+    delete_todo,
+    patch_todo,
+    read_todos,
+)
 from fastapi_zero.schemas import (  # noqa: F811
     FilterTodo,
     TodoSchema,
     TodoState,
+    TodoUpdate,
 )
 
 
-class TodoFactory(factory.Factory):
+class TodoFactory(factory.Factory):  # type:ignore
     class Meta:
         model = Todo
 
-    title = factory.Faker('text')
-    description = factory.Faker('text')
+    title = factory.Faker('text')  # type:ignore
+    description = factory.Faker('text')  # type:ignore
     state = factory.fuzzy.FuzzyChoice(TodoState)
     user_id = 1
 
@@ -172,3 +178,50 @@ async def test_delete_other_user_todo(client, other_user, token, session):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Task not found.'}
+
+
+@pytest.mark.asyncio
+async def test_patch_todo(client, token, user, session):
+    todo = TodoFactory(user_id=user.id)
+    session.add(todo)
+    await session.commit()
+
+    response = client.patch(
+        f'/todos/{todo.id}',
+        json={'title': 'Teste do patch'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json()['title'] == 'Teste do patch'
+
+    # handler direct
+    todo_update = TodoUpdate(title='Teste do patch')
+    created_todo = await create_todo(todo, user, session)
+    todo_patch = await patch_todo(created_todo.id, user, session, todo_update)
+
+    assert todo_patch.title == 'Teste do patch'
+
+
+@pytest.mark.asyncio
+async def test_patch_todo_error(
+    client,
+    token,
+    user,
+    session,
+):
+    response = client.patch(
+        '/todos/10',
+        json={},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Task not found.'}
+
+    # handler direct
+    with pytest.raises(HTTPException) as exc_info:
+        await patch_todo(10, user, session, todo={})  # type: ignore
+
+    assert exc_info.value.status_code == HTTPStatus.NOT_FOUND
+    assert exc_info.value.detail == 'Task not found.'

@@ -13,6 +13,7 @@ from fastapi_zero.schemas import (
     TodoList,
     TodoPublic,
     TodoSchema,
+    TodoUpdate,
 )
 from fastapi_zero.security import get_current_user
 
@@ -83,3 +84,29 @@ async def delete_todo(
     await session.commit()
 
     return {'message': 'Task has been deleted successfully.'}
+
+
+@router.patch('/{todo_id}', response_model=TodoPublic)
+async def patch_todo(
+    todo_id: int,
+    current_user: Current_User,
+    session: T_Session,
+    todo: TodoUpdate,
+):
+    db_todo = await session.scalar(
+        select(Todo).where(Todo.id == todo_id, Todo.user_id == current_user.id)
+    )
+
+    if not db_todo:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Task not found.'
+        )
+
+    for key, value in todo.model_dump(exclude_unset=True).items():
+        setattr(db_todo, key, value)
+
+    session.add(db_todo)
+    await session.commit()
+    await session.refresh(db_todo)
+
+    return db_todo
