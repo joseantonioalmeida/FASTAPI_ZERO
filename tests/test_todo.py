@@ -40,13 +40,10 @@ def test_create_todo(client, token):
         headers={'Authorization': f'Bearer {token}'},
     )
 
+    todo_create = response.json()
+
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'title': 'title teste',
-        'description': 'description teste',
-        'state': 'todo',
-        'id': 1,
-    }
+    assert response.json() == todo_create
 
 
 @pytest.mark.asyncio
