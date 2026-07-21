@@ -29,21 +29,27 @@ class TodoFactory(factory.Factory):  # type:ignore
     user_id = 1
 
 
-def test_create_todo(client, token):
-    response = client.post(
-        '/todos/',
-        json={
+def test_create_todo(client, token, mock_db_time):
+    with mock_db_time(model=Todo) as time:
+        response = client.post(
+            '/todos/',
+            json={
+                'title': 'title teste',
+                'description': 'description teste',
+                'state': TodoState.todo,
+            },
+            headers={'Authorization': f'Bearer {token}'},
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.json() == {
+            'id': 1,
             'title': 'title teste',
             'description': 'description teste',
-            'state': TodoState.todo,
-        },
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    todo_create = response.json()
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == todo_create
+            'state': 'todo',
+            'created_at': time.isoformat(),
+            'updated_at': time.isoformat(),
+        }
 
 
 @pytest.mark.asyncio
