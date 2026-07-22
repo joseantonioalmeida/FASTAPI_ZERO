@@ -31,7 +31,8 @@ dev = [
     "taskipy (>=1.14.1,<2.0.0)",
     "pytest-asyncio (>=1.4.0,<2.0.0)",
     "factory-boy (>=3.3.3,<4.0.0)",
-    "freezegun (>=1.5.5,<2.0.0)"
+    "freezegun (>=1.5.5,<2.0.0)",
+    "testcontainers (>=4.14.2,<5.0.0)"
 ]
 
 [tool.ruff]
