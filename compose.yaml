@@ -1,0 +1,32 @@
+services:
+  fastapi_zero_database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: antonio_user
+      POSTGRES_DB: db_fastapizero
+      POSTGRES_PASSWORD: freantonio321
+    ports:
+      - "5432:5432"
+    volumes:
+      # Ajustado para o novo padrão do Postgres Docker
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U antonio_user -d db_fastapizero"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  fastapi_zero_app:
+    image: fastapi_zero_app
+    entrypoint: ./entrypoint.sh
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      fastapi_zero_database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://antonio_user:freantonio321@fastapi_zero_database:5432/db_fastapizero
+
+volumes:
+  pgdata:
