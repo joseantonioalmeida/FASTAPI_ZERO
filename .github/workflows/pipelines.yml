@@ -23,7 +23,7 @@ jobs:
         run: poetry run task test  
     
     env:
-      DATABASE_URL: $({ secrets.DATABASE_URL })
-      ACESS_TOKEN_EXPIRE_MINUTES: $({ secrets.ACESS_TOKEN_EXPIRE_MINUTES })
-      ALGORITHM: $({ secrets.ALGORITHM })
-      SECRET_KEY: $({ secrets.SECRET_KEY })
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ACESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACESS_TOKEN_EXPIRE_MINUTES }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
