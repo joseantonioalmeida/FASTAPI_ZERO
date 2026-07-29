@@ -1,0 +1,50 @@
+name: CI/CD Pipeline
+on: 
+  push: 
+    branches: [main]
+  pull_request: 
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Linter e Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copia os arquivos do repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar o python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+    
+      - name: Instalar o Poetry
+        run: pipx install poetry
+
+      - name: Instalar dependências
+        run: poetry install
+
+      - name: Executar o lint
+        run: poetry run task lint 
+         
+      - name: Executar os testes
+        run: poetry run task test  
+    
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ACESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACESS_TOKEN_EXPIRE_MINUTES }}
+      ALGORITHM: ${{ secrets.ALGORITHM }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  
+  deploy:
+    name: Deploy para Fly.io
+    needs: [test] # Só roda se o job 'test' passar com sucesso
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'  # Só faz deploy no push da branch main
+    runs-on: ubuntu-latest
+    concurrency: deploy-group
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
