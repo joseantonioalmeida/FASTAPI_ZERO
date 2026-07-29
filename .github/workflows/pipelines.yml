@@ -19,6 +19,9 @@ jobs:
       - name: Instalar dependências
         run: poetry install
 
+      - name: Executar o lint
+        run: poetry run task lint 
+         
       - name: Executar os testes
         run: poetry run task test  
     
